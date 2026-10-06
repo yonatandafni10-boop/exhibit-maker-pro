@@ -1,18 +1,20 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { catalogSets } from "@/lib/catalog-data";
+import { getSetDetails } from "@/lib/sets.functions";
 import { BrickStrip, Logo, ThemeBadge, formatPrice } from "@/components/brick";
 
 export const Route = createFileRoute("/sets/$slug")({
-  loader: ({ params }) => {
-    const set = catalogSets.find((s) => s.slug === params.slug);
-    if (!set) throw notFound();
-    return { set };
+  loader: async ({ params }) => {
+    const base = catalogSets.find((s) => s.slug === params.slug);
+    if (!base) throw notFound();
+    const details = await getSetDetails({ data: { slug: params.slug } });
+    return { set: { ...base, ...details } };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [{ title: "הסט לא נמצא — BRICKYARD" }, { name: "robots", content: "noindex" }] };
     const { set } = loaderData;
-    const desc = set.description.slice(0, 155) || `${set.name} — ${set.pieces} חלקים`;
+    const desc = set.description.slice(0, 155) || set.name;
     return {
       meta: [
         { title: `${set.name} — BRICKYARD` },
@@ -79,12 +81,15 @@ function SetPage() {
             <h1 className="text-3xl font-black leading-tight md:text-4xl">{set.name}</h1>
             {set.price != null && <div className="text-4xl font-black text-brick-red">{formatPrice(set.price)}</div>}
 
+            {!set.available && <div className="w-fit rounded-full bg-secondary px-4 py-1.5 text-sm font-bold">אזל מהמלאי</div>}
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex items-end gap-3">
-                <span className="text-6xl font-black">{(Number(set.pieces) || 0).toLocaleString("he-IL")}</span>
-                <span className="pb-2 text-xs font-bold tracking-widest text-muted-foreground">חלקים</span>
-              </div>
-              <div className="mt-4"><BrickStrip /></div>
+              {set.pieces && (
+                <div className="mb-4 flex items-end gap-3">
+                  <span className="text-6xl font-black">{Number(set.pieces).toLocaleString("he-IL")}</span>
+                  <span className="pb-2 text-xs font-bold tracking-widest text-muted-foreground">חלקים</span>
+                </div>
+              )}
+              <BrickStrip />
               {set.age && (
                 <div className="mt-4 flex gap-2">
                   <span className="rounded-full bg-secondary px-3 py-1 text-sm font-medium">גיל {set.age}</span>
