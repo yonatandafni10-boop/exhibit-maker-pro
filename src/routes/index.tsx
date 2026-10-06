@@ -6,10 +6,10 @@ import { BrickStrip, Logo, ThemeBadge, formatPrice, themeOf } from "@/components
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BRICKYARD — קטלוג סטי לגו" },
-      { name: "description", content: "קטלוג סטי לגו אמיתיים: תמונות, גילאים, מספר חלקים ומחירים." },
-      { property: "og:title", content: "BRICKYARD — קטלוג סטי לגו" },
-      { property: "og:description", content: "קטלוג סטי לגו אמיתיים: תמונות, גילאים, מספר חלקים ומחירים." },
+      { title: "BRICKYARD — כל סטי הלגו במקום אחד" },
+      { name: "description", content: "קטלוג של כל סטי הלגו בישראל: תמונות, גילאים, מספר חלקים ומחירים." },
+      { property: "og:title", content: "BRICKYARD — כל סטי הלגו במקום אחד" },
+      { property: "og:description", content: "קטלוג של כל סטי הלגו בישראל: תמונות, גילאים, מספר חלקים ומחירים." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -17,20 +17,27 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Sort = "pieces-asc" | "pieces-desc" | "price-asc" | "price-desc";
+type Sort = "default" | "price-asc" | "price-desc" | "pieces-desc";
+const PAGE = 48;
 
 function Index() {
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<Sort>("pieces-asc");
-  const total = catalogSets.reduce((a, s) => a + (Number(s.pieces) || 0), 0);
+  const [sort, setSort] = useState<Sort>("default");
+  const [inStock, setInStock] = useState(true);
+  const [shown, setShown] = useState(PAGE);
+  const inStockCount = catalogSets.filter((s) => s.available).length;
 
   const list = useMemo(() => {
+    const ql = q.toLowerCase();
     const f = catalogSets.filter(
-      (s) => s.name.toLowerCase().includes(q.toLowerCase()) || themeOf(s.name).toLowerCase().includes(q.toLowerCase()),
+      (s) => (!inStock || s.available) && (s.name.toLowerCase().includes(ql) || themeOf(s.name).toLowerCase().includes(ql)),
     );
-    const key = (s: (typeof f)[number]) => (sort.startsWith("pieces") ? Number(s.pieces) || 0 : s.price ?? 0);
-    return [...f].sort((a, b) => (sort.endsWith("asc") ? key(a) - key(b) : key(b) - key(a)));
-  }, [q, sort]);
+    if (sort === "default") return f;
+    const key = (s: (typeof f)[number]) => (sort === "pieces-desc" ? Number(s.pieces) || 0 : s.price);
+    return [...f].sort((a, b) => (sort === "price-asc" ? key(a) - key(b) : key(b) - key(a)));
+  }, [q, sort, inStock]);
+
+  const reset = () => setShown(PAGE);
 
   return (
     <div dir="rtl" className="studs-bg min-h-screen text-foreground">
@@ -45,45 +52,49 @@ function Index() {
               נספרת.
             </h1>
             <p className="mt-6 max-w-lg text-lg text-muted-foreground">
-              קטלוג סטי לגו אמיתיים — מספר חלקים, גילאים ומחירים של כל סט, במקום אחד.
+              כל סטי הלגו במקום אחד — תמונות, גילאים ומחירים של כל סט.
             </p>
           </div>
           <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">חלקים בכל הקטלוג</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">סטים בקטלוג</p>
             <div className="mt-2 flex items-end gap-3">
-              <span className="text-6xl font-black text-brick-red">{total.toLocaleString("he-IL")}</span>
-              <span className="pb-2 text-xs font-bold tracking-widest text-muted-foreground">חלקים בסך הכל</span>
+              <span className="text-6xl font-black text-brick-red">{catalogSets.length.toLocaleString("he-IL")}</span>
+              <span className="pb-2 text-xs font-bold tracking-widest text-muted-foreground">סטים</span>
             </div>
             <div className="mt-4"><BrickStrip /></div>
-            <p className="mt-4 text-sm text-muted-foreground">ב-{catalogSets.length} סטים שונים.</p>
+            <p className="mt-4 text-sm text-muted-foreground">{inStockCount.toLocaleString("he-IL")} מהם זמינים במלאי עכשיו.</p>
           </div>
         </section>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <input
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="חיפוש לפי שם סט או סדרה..."
+            onChange={(e) => { setQ(e.target.value); reset(); }}
+            placeholder="חיפוש לפי שם סט, מספר או סדרה..."
             className="flex-1 rounded-2xl border border-border bg-card px-5 py-3.5 outline-none focus:ring-2 focus:ring-ring"
           />
           <label className="flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3">
             <span className="text-xs font-bold tracking-widest text-muted-foreground">מיון</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="bg-transparent font-medium outline-none">
-              <option value="pieces-asc">חלקים: מהקטן לגדול</option>
-              <option value="pieces-desc">חלקים: מהגדול לקטן</option>
+            <select value={sort} onChange={(e) => { setSort(e.target.value as Sort); reset(); }} className="bg-transparent font-medium outline-none">
+              <option value="default">חדשים</option>
               <option value="price-asc">מחיר: מהזול ליקר</option>
               <option value="price-desc">מחיר: מהיקר לזול</option>
+              <option value="pieces-desc">הכי הרבה חלקים</option>
             </select>
+          </label>
+          <label className="flex items-center gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm font-medium">
+            <input type="checkbox" checked={inStock} onChange={(e) => { setInStock(e.target.checked); reset(); }} />
+            רק במלאי
           </label>
         </div>
 
         <div className="mt-10 flex items-baseline justify-between">
           <h2 className="text-2xl font-black">הקטלוג</h2>
-          <span className="text-xs font-bold tracking-widest text-muted-foreground">{list.length} סטים</span>
+          <span className="text-xs font-bold tracking-widest text-muted-foreground">{list.length.toLocaleString("he-IL")} סטים</span>
         </div>
 
         <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((s) => (
+          {list.slice(0, shown).map((s) => (
             <Link
               key={s.slug}
               to="/sets/$slug"
@@ -98,19 +109,28 @@ function Index() {
                 <h3 className="text-lg font-bold leading-snug">{s.name}</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {s.age && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">גיל {s.age}</span>}
-                  {s.price != null && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold">{formatPrice(s.price)}</span>}
+                  {s.pieces && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">{Number(s.pieces).toLocaleString("he-IL")} חלקים</span>}
+                  {!s.available && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">אזל</span>}
                 </div>
                 <div className="mt-auto border-t border-border pt-4">
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-black">{(Number(s.pieces) || 0).toLocaleString("he-IL")}</span>
-                    <span className="pb-1 text-xs font-bold tracking-widest text-muted-foreground">חלקים</span>
-                  </div>
+                  <span className="text-4xl font-black">{formatPrice(s.price)}</span>
                   <div className="mt-3"><BrickStrip /></div>
                 </div>
               </div>
             </Link>
           ))}
         </div>
+
+        {shown < list.length && (
+          <div className="mt-10 text-center">
+            <button
+              onClick={() => setShown((n) => n + PAGE)}
+              className="rounded-full bg-brick-red px-8 py-3 font-bold text-primary-foreground shadow-sm transition hover:opacity-90"
+            >
+              הצג עוד סטים
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
