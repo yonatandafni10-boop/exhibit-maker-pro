@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { catalogSets } from "@/lib/catalog-data";
 import { getSetDetails } from "@/lib/sets.functions";
+import { CheckoutDialog } from "@/components/checkout-dialog";
 import { BrickStrip, Logo, ThemeBadge, formatPrice } from "@/components/brick";
 
 export const Route = createFileRoute("/sets/$slug")({
@@ -47,6 +48,7 @@ function SetPage() {
   const { set } = Route.useLoaderData();
   const images = set.images.length ? set.images : [set.image];
   const [active, setActive] = useState(images[0]);
+  const [buy, setBuy] = useState(false);
 
   return (
     <div dir="rtl" className="studs-bg min-h-screen text-foreground">
@@ -81,6 +83,14 @@ function SetPage() {
             <h1 className="text-3xl font-black leading-tight md:text-4xl">{set.name}</h1>
             {set.price != null && <div className="text-2xl font-black text-brick-red">{formatPrice(set.price)}</div>}
 
+            <button
+              onClick={() => setBuy(true)}
+              disabled={!set.available || set.price == null}
+              className="w-full rounded-2xl bg-brick-red py-4 text-xl font-black text-primary-foreground shadow-md transition hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-50"
+            >
+              {set.available ? "לרכישה 🛒" : "אזל מהמלאי"}
+            </button>
+            <CheckoutDialog open={buy} onOpenChange={setBuy} set={set} />
             {!set.available && <div className="w-fit rounded-full bg-secondary px-4 py-1.5 text-sm font-bold">אזל מהמלאי</div>}
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               {set.pieces && (
