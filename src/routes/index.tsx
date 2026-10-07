@@ -107,15 +107,13 @@ function Index() {
               </div>
               <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
                 <h3 className="text-lg font-bold leading-snug">{s.name}</h3>
+                {s.price != null && <div className="mt-1.5 text-xl font-black text-brick-red">{formatPrice(s.price)}</div>}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {s.age && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">גיל {s.age}</span>}
                   {s.pieces && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">{Number(s.pieces).toLocaleString("he-IL")} חלקים</span>}
                   {!s.available && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">אזל</span>}
                 </div>
-                <div className="mt-auto border-t border-border pt-4">
-                  <span className="text-4xl font-black">{formatPrice(s.price)}</span>
-                  <div className="mt-3"><BrickStrip /></div>
-                </div>
+                <div className="mt-auto pt-4"><BrickStrip /></div>
               </div>
             </Link>
           ))}
