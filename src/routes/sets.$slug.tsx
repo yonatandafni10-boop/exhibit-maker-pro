@@ -79,7 +79,7 @@ function SetPage() {
 
           <div className="flex flex-col gap-6">
             <h1 className="text-3xl font-black leading-tight md:text-4xl">{set.name}</h1>
-            {set.price != null && <div className="text-4xl font-black text-brick-red">{formatPrice(set.price)}</div>}
+            {set.price != null && <div className="text-2xl font-black text-brick-red">{formatPrice(set.price)}</div>}
 
             {!set.available && <div className="w-fit rounded-full bg-secondary px-4 py-1.5 text-sm font-bold">אזל מהמלאי</div>}
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
