@@ -103,7 +103,16 @@ export function CheckoutDialog({ open, onOpenChange, set }: Props) {
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <div className="text-5xl">🎉</div>
             <div className="text-2xl font-black">תודה על ההזמנה!</div>
-            <p className="text-muted-foreground">התשלום התקבל. נשלח אליך עדכון לאימייל {form.email}.</p>
+            <p className="text-muted-foreground">התשלום התקבל. פרטי ההזמנה שלך:</p>
+            <div className="w-full rounded-2xl border border-border p-4 text-right text-sm leading-7">
+              <div><b>סט:</b> {set.name}</div>
+              <div><b>מחיר:</b> {formatPrice(set.price)}</div>
+              <div><b>שם:</b> {form.fullName}</div>
+              <div><b>אימייל:</b> {form.email}</div>
+              <div><b>טלפון:</b> {form.phone}</div>
+              <div><b>כתובת:</b> {form.street}, {form.city}, {form.country}</div>
+            </div>
+            <p className="text-xs text-muted-foreground">נעדכן אותך באימייל ובווטסאפ כשההזמנה תגיע.</p>
             <BrickStrip />
           </div>
         )}
@@ -149,7 +158,8 @@ function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; o
           createOrder: (_: unknown, actions: { order: { create: (o: unknown) => Promise<string> } }) =>
             actions.order.create({
               purchase_units: [{
-                description: set.name.slice(0, 127),
+                description: `${set.name} | ${form.fullName} | ${form.phone} | ${form.email}`.slice(0, 127),
+                invoice_id: `BY-${Date.now()}`,
                 custom_id: set.slug.slice(0, 127),
                 amount: { currency_code: "ILS", value: (set.price ?? 0).toFixed(2) },
                 shipping: {
