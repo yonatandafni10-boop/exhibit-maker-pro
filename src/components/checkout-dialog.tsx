@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { BrickStrip, formatPrice } from "@/components/brick";
 
 // PayPal Client ID is public (safe in code). Set it once the owner provides it.
-export const PAYPAL_CLIENT_ID = "";
+export const PAYPAL_CLIENT_ID = "BAA_A3J86cQ99PJRCzNsg0rDBGANY-lI1XEDbDLT_iwn6oL1UdjYmeRiPw6luLOHhwu3_0nB2xX2xJ3b7k";
 
 const schema = z.object({
   fullName: z.string().trim().min(2, "נא למלא שם מלא").max(100),
