@@ -139,11 +139,14 @@ function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; o
   const ref = useRef<HTMLDivElement>(null);
   const [err, setErr] = useState("");
   const { t, currency, convert, lang } = useI18n();
+  const latest = useRef({ form, onPaid, t });
+  latest.current = { form, onPaid, t };
 
   useEffect(() => {
     if (!PAYPAL_CLIENT_ID || !ref.current) return;
     const el = ref.current;
     const value = convert(set.price ?? 0).toFixed(2);
+    const { form, onPaid, t } = latest.current;
     const render = () => {
       const paypal = (window as unknown as { paypal?: PP }).paypal;
       if (!paypal) return;
@@ -164,7 +167,7 @@ function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; o
             }),
           onApprove: async (_: unknown, actions: { order: { capture: () => Promise<unknown> } }) => {
             await actions.order.capture();
-            onPaid();
+            latest.current.onPaid();
           },
           onError: () => setErr(t("payFail")),
         });
@@ -184,7 +187,8 @@ function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; o
     s.onload = render;
     s.onerror = () => setErr(t("payFail"));
     document.body.appendChild(s);
-  }, [set, form, onPaid, currency, convert, lang, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [set.slug, set.price, currency, lang]);
 
   if (!PAYPAL_CLIENT_ID) {
     return (
