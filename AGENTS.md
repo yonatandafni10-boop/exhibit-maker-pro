@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Homepage social sharing uses a CDN asset pointer resolved against the published origin, so link crawlers receive an absolute image URL without depending on bundled asset paths.

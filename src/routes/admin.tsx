@@ -8,7 +8,15 @@ import { SiteHeader } from "@/components/site-header";
 import { useIsAdmin, useOverrides, useSiteTexts } from "@/lib/site-data";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "ניהול — BRICKYARD" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "ניהול — BRICKYARD" },
+    { name: "description", content: "כניסת בעל האתר לניהול קטלוג BRICKYARD." },
+    { property: "og:title", content: "ניהול — BRICKYARD" },
+    { property: "og:description", content: "כניסת בעל האתר לניהול קטלוג BRICKYARD." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: AdminPage,
 });
 

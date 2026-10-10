@@ -5,6 +5,9 @@ import { BrickStrip, ThemeBadge, themeOf } from "@/components/brick";
 import { SiteHeader } from "@/components/site-header";
 import { useI18n } from "@/lib/i18n";
 import { applyOverride, useOverrides, useSiteTexts } from "@/lib/site-data";
+import shareImage from "@/assets/brickyard-share.jpg.asset.json";
+
+const shareImageUrl = new URL(shareImage.url, "https://exhibit-maker-pro.lovable.app").href;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -15,6 +18,12 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "קטלוג של כל סטי הלגו בישראל: תמונות, גילאים, מספר חלקים ומחירים." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: shareImageUrl },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "BRICKYARD — עולם של לבני בנייה צבעוניות" },
+      { name: "twitter:image", content: shareImageUrl },
     ],
   }),
   component: Index,
