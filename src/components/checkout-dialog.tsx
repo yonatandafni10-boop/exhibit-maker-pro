@@ -138,10 +138,12 @@ type PP = {
 function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; onPaid: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [err, setErr] = useState("");
+  const { t, currency, convert, lang } = useI18n();
 
   useEffect(() => {
     if (!PAYPAL_CLIENT_ID || !ref.current) return;
     const el = ref.current;
+    const value = convert(set.price ?? 0).toFixed(2);
     const render = () => {
       const paypal = (window as unknown as { paypal?: PP }).paypal;
       if (!paypal) return;
@@ -152,34 +154,37 @@ function PayPalButtons({ set, form, onPaid }: { set: Props["set"]; form: Form; o
           style: { layout: "vertical", shape: "pill", height: 48 },
           createOrder: (_: unknown, actions: { order: { create: (o: unknown) => Promise<string> } }) =>
             actions.order.create({
+              intent: "CAPTURE",
               purchase_units: [{
                 description: `${set.name} | ${form.fullName} | ${form.phone} | ${form.email}`.slice(0, 127),
                 invoice_id: `BY-${Date.now()}`,
-                custom_id: set.slug.slice(0, 127),
-                amount: { currency_code: "ILS", value: (set.price ?? 0).toFixed(2) },
-                shipping: {
-                  name: { full_name: form.fullName },
-                  address: { address_line_1: form.street, admin_area_2: form.city, postal_code: form.zip || undefined, country_code: "IL" },
-                },
+                custom_id: `${form.street}, ${form.city}, ${form.country} ${form.zip ?? ""}`.slice(0, 127),
+                amount: { currency_code: currency, value },
               }],
             }),
           onApprove: async (_: unknown, actions: { order: { capture: () => Promise<unknown> } }) => {
             await actions.order.capture();
             onPaid();
           },
-          onError: () => setErr("התשלום נכשל, נסה שוב."),
+          onError: () => setErr(t("payFail")),
         });
         if (b.isEligible()) void b.render(el);
       }
     };
     const id = "paypal-sdk";
-    if (document.getElementById(id)) return render();
+    const old = document.getElementById(id);
+    if (old?.getAttribute("data-cur") === currency) { render(); return; }
+    old?.remove();
+    delete (window as unknown as { paypal?: PP }).paypal;
+    const locale = { he: "he_IL", en: "en_US", ar: "ar_EG", ru: "ru_RU", fr: "fr_FR", es: "es_ES", de: "de_DE" }[lang];
     const s = document.createElement("script");
     s.id = id;
-    s.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=ILS&locale=he_IL&enable-funding=card`;
+    s.setAttribute("data-cur", currency);
+    s.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${currency}&locale=${locale}&enable-funding=card&components=buttons`;
     s.onload = render;
+    s.onerror = () => setErr(t("payFail"));
     document.body.appendChild(s);
-  }, [set, form, onPaid]);
+  }, [set, form, onPaid, currency, convert, lang, t]);
 
   if (!PAYPAL_CLIENT_ID) {
     return (
