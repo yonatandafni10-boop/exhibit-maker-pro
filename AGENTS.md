@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Homepage social sharing uses a CDN asset pointer resolved against the published origin, so link crawlers receive an absolute image URL without depending on bundled asset paths.
+- Product-name translations are static locale maps keyed by stable catalog slugs; use the shared display helper while preserving canonical names for theme classification, payments and owner overrides so localization never changes product identity or business data.

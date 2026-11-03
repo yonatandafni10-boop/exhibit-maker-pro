@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { useI18n } from "@/lib/i18n";
 import { applyOverride, useOverrides, useSiteTexts } from "@/lib/site-data";
 import shareImage from "@/assets/brickyard-share-he.jpg.asset.json";
+import { matchesProductName, productName } from "@/lib/product-names";
 
 const shareImageUrl = new URL(shareImage.url, "https://exhibit-maker-pro.lovable.app").href;
 
@@ -41,19 +42,19 @@ function Index() {
   const { data: ov } = useOverrides();
   const { data: texts } = useSiteTexts();
   const tx = (k: string) => (lang === "he" && texts?.[k]) || t(k);
-  const all = useMemo(() => catalogSets.filter((s) => !ov?.[s.slug]?.hidden).map((s) => applyOverride(s, ov?.[s.slug])), [ov]);
+  const all = useMemo(() => catalogSets.filter((s) => !ov?.[s.slug]?.hidden).map((s) => ({ ...applyOverride(s, ov?.[s.slug]), originalName: s.name })), [ov]);
   const inStockCount = all.filter((s) => s.available).length;
   const n = (x: number) => x.toLocaleString();
 
   const list = useMemo(() => {
     const ql = q.toLowerCase();
     const f = all.filter(
-      (s) => (!inStock || s.available) && (s.name.toLowerCase().includes(ql) || themeOf(s.name).toLowerCase().includes(ql)),
+      (s) => (!inStock || s.available) && (matchesProductName(s, lang, ql, s.originalName) || themeOf(s.originalName).toLowerCase().includes(ql)),
     );
     if (sort === "default") return f;
     const key = (s: (typeof f)[number]) => (sort === "pieces-desc" ? Number(s.pieces) || 0 : s.price);
     return [...f].sort((a, b) => (sort === "price-asc" ? key(a) - key(b) : key(b) - key(a)));
-  }, [q, sort, inStock, all]);
+  }, [q, sort, inStock, all, lang]);
 
   const reset = () => setShown(PAGE);
 
@@ -120,11 +121,11 @@ function Index() {
               className="group flex flex-col rounded-3xl border border-border bg-card p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-secondary">
-                <img src={s.image} alt={s.name} loading="lazy" className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" />
-                <div className="absolute end-3 top-3"><ThemeBadge name={s.name} /></div>
+                <img src={s.image} alt={productName(s, lang, s.originalName)} loading="lazy" className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" />
+                <div className="absolute end-3 top-3"><ThemeBadge name={s.originalName} /></div>
               </div>
               <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
-                <h3 className="text-lg font-bold leading-snug">{s.name}</h3>
+                <h3 className="text-lg font-bold leading-snug">{productName(s, lang, s.originalName)}</h3>
                 {s.price != null && <div className="mt-1.5 text-xl font-black text-brick-red">{price(s.price)}</div>}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {s.age && <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">{t("age")} {s.age}</span>}

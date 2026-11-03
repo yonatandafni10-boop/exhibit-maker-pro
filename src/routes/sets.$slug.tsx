@@ -7,6 +7,7 @@ import { BrickStrip, ThemeBadge } from "@/components/brick";
 import { SiteHeader } from "@/components/site-header";
 import { useI18n } from "@/lib/i18n";
 import { applyOverride, useOverrides } from "@/lib/site-data";
+import { productName } from "@/lib/product-names";
 
 export const Route = createFileRoute("/sets/$slug")({
   loader: async ({ params }) => {
@@ -51,7 +52,8 @@ function SetPage() {
   const { set: base } = Route.useLoaderData();
   const { data: ov } = useOverrides();
   const set = applyOverride(base, ov?.[base.slug]);
-  const { t, price, dir } = useI18n();
+  const { t, price, dir, lang } = useI18n();
+  const displayName = productName(set, lang, base.name);
   const images = set.images.length ? set.images : [set.image];
   const [active, setActive] = useState(images[0]);
   const [buy, setBuy] = useState(false);
@@ -64,8 +66,8 @@ function SetPage() {
         <div className="mt-10 grid gap-8 lg:grid-cols-2">
           <div>
             <div className="relative aspect-square overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm">
-              <img src={active} alt={set.name} className="h-full w-full object-contain" />
-              <div className="absolute end-4 top-4"><ThemeBadge name={set.name} /></div>
+              <img src={active} alt={displayName} className="h-full w-full object-contain" />
+              <div className="absolute end-4 top-4"><ThemeBadge name={base.name} /></div>
             </div>
             {images.length > 1 && (
               <div className="mt-4 grid grid-cols-6 gap-2">
@@ -83,7 +85,7 @@ function SetPage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <h1 className="text-3xl font-black leading-tight md:text-4xl">{set.name}</h1>
+            <h1 className="text-3xl font-black leading-tight md:text-4xl">{displayName}</h1>
             {set.price != null && <div className="text-2xl font-black text-brick-red">{price(set.price)}</div>}
 
             <button
@@ -93,7 +95,7 @@ function SetPage() {
             >
               {set.available ? t("buy") : t("soldOut")}
             </button>
-            <CheckoutDialog open={buy} onOpenChange={setBuy} set={set} />
+            <CheckoutDialog open={buy} onOpenChange={setBuy} set={set} displayName={displayName} />
             
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
               <div className="mb-4 flex items-end gap-3">
