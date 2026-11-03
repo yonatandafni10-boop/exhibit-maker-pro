@@ -1,5 +1,5 @@
-/// <reference types="bun" />
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { catalogSets } from "./catalog-data";
 import { productName, matchesProductName } from "./product-names";
 import translations from "./product-names.json";
@@ -13,32 +13,32 @@ describe("product language selection", () => {
     test(`every catalog product resolves its ${lang} translation without changing identity or price`, () => {
       for (const set of catalogSets) {
         const before = { ...set };
-        expect(localized[set.slug]?.[lang]?.length).toBeGreaterThan(0);
-        expect(productName(set, lang)).toBe(localized[set.slug]?.[lang]);
-        expect(set).toEqual(before);
+        assert.ok((localized[set.slug]?.[lang]?.length ?? 0) > 0);
+        assert.equal(productName(set, lang), localized[set.slug]?.[lang]);
+        assert.deepEqual(set, before);
       }
     });
   }
 
   test("Hebrew keeps original catalog names", () => {
-    for (const set of catalogSets) expect(productName(set, "he")).toBe(set.name);
+    for (const set of catalogSets) assert.equal(productName(set, "he"), set.name);
   });
 
   test("owner name overrides remain authoritative", () => {
     const set = catalogSets[0];
     if (!set) throw new Error("Catalog must contain products");
     const override = { ...set, name: "Owner custom name" };
-    for (const lang of languages) expect(productName(override, lang, set.name)).toBe(override.name);
+    for (const lang of languages) assert.equal(productName(override, lang, set.name), override.name);
   });
 
   test("search finds localized names, original names and stable product identifiers", () => {
     const set = catalogSets[0];
     if (!set) throw new Error("Catalog must contain products");
     for (const lang of languages) {
-      expect(matchesProductName(set, lang, productName(set, lang))).toBe(true);
-      expect(matchesProductName(set, lang, set.name)).toBe(true);
-      expect(matchesProductName(set, lang, set.slug)).toBe(true);
-      expect(matchesProductName(set, lang, "nonexistent-product-xyz987654321")).toBe(false);
+      assert.equal(matchesProductName(set, lang, productName(set, lang)), true);
+      assert.equal(matchesProductName(set, lang, set.name), true);
+      assert.equal(matchesProductName(set, lang, set.slug), true);
+      assert.equal(matchesProductName(set, lang, "nonexistent-product-xyz987654321"), false);
     }
   });
 });
