@@ -30,9 +30,9 @@ const fields: { key: keyof Form; label: string; type?: string; full?: boolean }[
   { key: "notes", label: "notes" },
 ];
 
-type Props = { open: boolean; onOpenChange: (o: boolean) => void; set: { name: string; slug: string; price: number | null; image: string } };
+type Props = { open: boolean; onOpenChange: (o: boolean) => void; set: { name: string; slug: string; price: number | null; image: string }; displayName?: string };
 
-export function CheckoutDialog({ open, onOpenChange, set }: Props) {
+export function CheckoutDialog({ open, onOpenChange, set, displayName = set.name }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState<Form>({ fullName: "", email: "", phone: "", country: "", city: "", street: "", zip: "", notes: "" });
   const { t, price, dir } = useI18n();
@@ -60,7 +60,7 @@ export function CheckoutDialog({ open, onOpenChange, set }: Props) {
         <div className="flex items-center gap-3 rounded-2xl border border-border bg-secondary/50 p-3">
           <img src={set.image} alt="" className="h-14 w-14 rounded-xl bg-card object-contain p-1" />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-bold">{set.name}</div>
+            <div className="text-sm font-bold">{displayName}</div>
             <div className="text-lg font-black text-brick-red">{price(set.price)}</div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function CheckoutDialog({ open, onOpenChange, set }: Props) {
                   onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                   className={`rounded-xl border-2 bg-card px-3 py-2.5 text-sm outline-none focus:border-brick-blue ${errors[f.key] ? "border-brick-red" : "border-border"}`}
                 />
-                {errors[f.key] && <span className="text-xs font-medium text-brick-red">{t(errors[f.key]!)}</span>}
+                {errors[f.key] && <span className="text-xs font-medium text-brick-red">{t(errors[f.key] ?? "required")}</span>}
               </label>
             ))}
             {Object.keys(errors).length > 0 && <p className="col-span-2 rounded-xl bg-brick-red/10 p-2 text-center text-sm font-bold text-brick-red">{t("fixRed")}</p>}
