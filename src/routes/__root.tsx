@@ -130,6 +130,9 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <I18nProvider>
         <Outlet />
+        <p dir="rtl" className="pointer-events-none fixed bottom-2 left-2 z-40 rounded-full bg-card/80 px-3 py-1 text-[10px] font-bold text-muted-foreground shadow-sm">
+          יוצרים: אור שפרינגר, נועם דויג, יונתן דפני
+        </p>
       </I18nProvider>
     </QueryClientProvider>
   );
