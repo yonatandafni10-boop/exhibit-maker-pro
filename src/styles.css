@@ -156,7 +156,15 @@
 }
 
 .studs-bg {
-  background-color: oklch(0.975 0.004 250);
-  background-image: radial-gradient(var(--dot) 1.5px, transparent 1.6px);
-  background-size: 18px 18px;
+  background-color: oklch(0.97 0.03 90);
+  background-image:
+    radial-gradient(oklch(0.62 0.22 27 / 0.35) 2px, transparent 2.2px),
+    radial-gradient(oklch(0.55 0.18 255 / 0.3) 2px, transparent 2.2px),
+    radial-gradient(circle at 10% 15%, oklch(0.88 0.17 95 / 0.55), transparent 40%),
+    radial-gradient(circle at 90% 25%, oklch(0.75 0.15 250 / 0.4), transparent 40%),
+    radial-gradient(circle at 20% 85%, oklch(0.75 0.17 150 / 0.4), transparent 40%),
+    radial-gradient(circle at 85% 80%, oklch(0.72 0.2 25 / 0.35), transparent 40%);
+  background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-position: 0 0, 12px 12px, 0 0, 0 0, 0 0, 0 0;
+  background-attachment: scroll, scroll, fixed, fixed, fixed, fixed;
 }
